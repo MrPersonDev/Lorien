@@ -156,7 +156,10 @@ func _unhandled_input(event):
 			elif Utils.event_pressed_bug_workaround("shortcut_line_tool", event):
 				_toolbar.enable_tool(Types.Tool.LINE)
 			elif Utils.event_pressed_bug_workaround("shortcut_eraser_tool", event):
-				_toolbar.enable_tool(Types.Tool.ERASER)
+				if _toolbar.eraser_enabled():
+					_toolbar.enable_tool(_toolbar.prev_tool())
+				else:
+					_toolbar.enable_tool(Types.Tool.ERASER)
 			elif Utils.event_pressed_bug_workaround("shortcut_select_tool", event):
 				_toolbar.enable_tool(Types.Tool.SELECT)
 			elif Utils.event_pressed_bug_workaround("toggle_distraction_free_mode", event):

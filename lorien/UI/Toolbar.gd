@@ -43,6 +43,8 @@ onready var _tool_btn_eraser: TextureButton = $Console/Left/EraserToolButton
 onready var _tool_btn_selection: TextureButton = $Console/Left/SelectionToolButton
 
 var _last_active_tool_button: TextureButton
+var _eraser_enabled: bool
+var _prev_tool: int = Types.Tool.BRUSH
 
 # -------------------------------------------------------------------------------------------------
 func _ready():
@@ -52,6 +54,7 @@ func _ready():
 	_brush_size_label.text = str(brush_size)
 	_brush_size_slider.value = brush_size
 	_last_active_tool_button = _tool_btn_brush
+	_eraser_enabled = false
 
 # Button clicked callbacks
 # -------------------------------------------------------------------------------------------------
@@ -71,9 +74,21 @@ func enable_tool(tool_type: int) -> void:
 		Types.Tool.RECTANGLE: btn = _tool_btn_rectangle
 		Types.Tool.CIRCLE: btn = _tool_btn_circle
 	
+	_eraser_enabled = tool_type == Types.Tool.ERASER
+	if !_eraser_enabled:
+		_prev_tool = tool_type
+	
 	btn.toggle()
 	_change_active_tool_button(btn)
 	emit_signal("tool_changed", tool_type)
+
+# -------------------------------------------------------------------------------------------------
+func eraser_enabled() -> bool:
+	return _eraser_enabled
+
+# -------------------------------------------------------------------------------------------------
+func prev_tool() -> int:
+	return _prev_tool
 
 # -------------------------------------------------------------------------------------------------
 func set_brush_color(color: Color) -> void:
