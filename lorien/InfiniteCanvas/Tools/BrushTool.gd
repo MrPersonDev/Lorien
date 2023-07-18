@@ -28,10 +28,10 @@ func tool_event(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_LEFT:
 			if event.pressed:
+				_prev_points.clear()
 				start_stroke()
 				_first_point = true
 			elif !event.pressed && performing_stroke:
-				_prev_points.clear()
 				end_stroke()
 
 # -------------------------------------------------------------------------------------------------
