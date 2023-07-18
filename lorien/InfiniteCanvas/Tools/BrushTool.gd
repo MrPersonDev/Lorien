@@ -13,6 +13,7 @@ var _current_position: Vector2
 var _current_pressure: float
 var _last_accepted_position: Vector2
 var _first_point := false
+var _prev_points: Array # Array<Vector2>
 
 # -------------------------------------------------------------------------------------------------
 func tool_event(event: InputEvent) -> void:
@@ -30,7 +31,19 @@ func tool_event(event: InputEvent) -> void:
 				start_stroke()
 				_first_point = true
 			elif !event.pressed && performing_stroke:
+				_prev_points.clear()
 				end_stroke()
+
+# -------------------------------------------------------------------------------------------------
+func smooth_points(point: Vector2) -> Vector2:
+	_prev_points.append(point)
+	var average_point := Vector2(0.0, 0.0)
+	for p in _prev_points:
+		average_point += p
+	average_point /= _prev_points.size()
+	while _prev_points.size() > Settings.get_value(Settings.GENERAL_POINT_SMOOTHING, Config.DEFAULT_POINT_SMOOTHING):
+		_prev_points.pop_front()
+	return average_point
 
 # -------------------------------------------------------------------------------------------------
 func _process(delta: float) -> void:
@@ -47,14 +60,15 @@ func _process(delta: float) -> void:
 			_first_point = false
 		var point_position := xform_vector2(_current_position)
 		
-		add_stroke_point(point_position, point_pressure)
+		var smoothed_point := smooth_points(point_position)
+		add_stroke_point(smoothed_point, point_pressure)
 		
 		# If the brush stroke gets too long, we make a new one. This is necessary because Godot limits the number
 		# of indices in a Line2D/Polygon
 		if get_current_brush_stroke().points.size() >= BrushStroke.MAX_POINTS:
 			end_stroke()
 			start_stroke()
-			add_stroke_point(point_position, point_pressure)
+			add_stroke_point(smoothed_point, point_pressure)
 			
 		_last_accepted_position = _current_position
 

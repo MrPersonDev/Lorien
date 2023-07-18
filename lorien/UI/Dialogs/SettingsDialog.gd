@@ -139,6 +139,10 @@ func _on_PressureSensitivity_value_changed(value: float):
 	Settings.set_value(Settings.GENERAL_PRESSURE_SENSITIVITY, value)
 
 # -------------------------------------------------------------------------------------------------
+func _on_PointSmoothing_value_changed(value: int):
+	Settings.set_value(Settings.GENERAL_POINT_SMOOTHING, value)
+
+# -------------------------------------------------------------------------------------------------
 func _on_DefaultSaveDir_text_changed(text: String) -> void:
 	text = text.replace("\\", "/")
 	

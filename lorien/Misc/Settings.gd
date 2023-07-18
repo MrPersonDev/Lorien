@@ -3,6 +3,7 @@ extends Node
 # -------------------------------------------------------------------------------------------------
 const DEFAULT_SECTION 					:= "settings"
 const SHORTCUTS_SECTION 				:= "shortcuts"
+const GENERAL_POINT_SMOOTHING			:= "general_point_smoothing"
 const GENERAL_PRESSURE_SENSITIVITY 		:= "general_pressure_sensitvity"
 const GENERAL_DEFAULT_CANVAS_COLOR 		:= "general_default_canvas_color"
 const GENERAL_DEFAULT_BRUSH_SIZE 		:= "general_default_brush_size"

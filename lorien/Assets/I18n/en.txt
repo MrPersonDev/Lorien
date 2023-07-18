@@ -61,6 +61,7 @@ SETTINGS_GENERAL                General
 SETTINGS_APPEARANCE             Appearance
 SETTINGS_RENDERING              Rendering
 SETTINGS_KEYBINDINGS            Keybindings
+SETTINGS_POINT_SMOOTHING        Point Smoothing
 SETTINGS_PRESSURE_SENSITIVITY   Pressure Sensitivity
 SETTINGS_BRUSH_SIZE             Default Brush Size
 SETTINGS_CANVAS_COLOR           Default Canvas Color
