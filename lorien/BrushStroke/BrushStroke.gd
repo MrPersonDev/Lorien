@@ -5,7 +5,7 @@ class_name BrushStroke
 const COLLIDER_NODE_NAME := "StrokeCollider"
 
 # ------------------------------------------------------------------------------------------------
-const MAX_LINE_POINTS		:= 10
+const MAX_LINE_POINTS		:= 1000
 const MAX_PRESSURE_VALUE 	:= 255
 const MIN_PRESSURE_VALUE 	:= 30
 const MAX_PRESSURE_DIFF 	:= 20
@@ -20,6 +20,8 @@ onready var _visibility_notifier: VisibilityNotifier2D = $VisibilityNotifier2D
 var color: Color setget set_color, get_color
 var size: int
 var points: Array # Array<Vector2>
+var smoothed_points: Array # Array<Vector2>
+var queued_points : Array # Array<Vector2>
 var pressures: Array # Array<float>
 var top_left_pos: Vector2
 var bottom_right_pos: Vector2
@@ -124,46 +126,54 @@ func add_point(point: Vector2, pressure: float) -> void:
 	converted_pressure = clamp(converted_pressure, MIN_PRESSURE_VALUE, MAX_PRESSURE_VALUE)
 	
 	points.append(point)
+	queued_points.append(point)
 	pressures.append(converted_pressure)
 
 # ------------------------------------------------------------------------------------------------
 func remove_last_point() -> void:
 	if !points.empty():
 		points.pop_back()
-		pressures.pop_back()
-		var _line2d := last_line()
-		_line2d.points.remove(_line2d.points.size() - 1)
-		_line2d.width_curve.remove_point(_line2d.width_curve.get_point_count() - 1)
+		
+		if (queued_points.size() > 0):
+			queued_points.pop_back()
 
 # ------------------------------------------------------------------------------------------------
 func remove_all_points() -> void:
 	if !points.empty():
 		points.clear()
+		queued_points.clear()
+		smoothed_points.clear()
 		pressures.clear()
 		remove_all_points()
 
 # ------------------------------------------------------------------------------------------------
-func refresh_line(start: int, end: int):
+func cubic_bezier(a: Vector2, b: Vector2, c: Vector2, d: Vector2, t: float) -> Vector2:
+	a *= pow(1 - t, 3)
+	b *= 3 * t * pow(1 - t, 2)
+	c *= 3 * pow(t, 2) * (1 - t)
+	d *= pow(t, 3)
+	return a + b + c + d
+
+# ------------------------------------------------------------------------------------------------
+func refresh_line(_points: Array, start: int, end: int):
 	var _line2d := create_line()
-	
 	var max_pressure := float(MAX_PRESSURE_VALUE)
-	var p_idx := 0
-	var curve_step: float = 1.0 / (end-start)
 	for i in range(start, end):
-		var point: Vector2 = points[i]
+		var point: Vector2 = _points[i]
+		
+		if (i-1 >= 0 && point ==_points[i-1]) || (i+1 < _points.size() && point == _points[i+1]):
+			continue
 		
 		# Add the point
 		_line2d.add_point(point)
-		var pressure: float = pressures[i]
-		_line2d.width_curve.add_point(Vector2(curve_step*p_idx, pressure / max_pressure))
-		p_idx += 1
 		
 		# Update the extreme values
 		top_left_pos.x = min(top_left_pos.x, point.x)
 		top_left_pos.y = min(top_left_pos.y, point.y)
 		bottom_right_pos.x = max(bottom_right_pos.x, point.x)
 		bottom_right_pos.y = max(bottom_right_pos.y, point.y)
-		
+	
+	_line2d.width_curve.add_point(Vector2(0.0, pressures[0] / max_pressure))
 	_line2d.width_curve.bake()
 
 # ------------------------------------------------------------------------------------------------
@@ -175,9 +185,25 @@ func refresh() -> void:
 	
 	top_left_pos = MAX_VECTOR2
 	bottom_right_pos = MIN_VECTOR2
+
+	for i in range(0, queued_points.size()-3, 4):
+		var a = queued_points[i]
+		var b = queued_points[i+1]
+		var c = queued_points[i+2]
+		var d = queued_points[i+3]
+		
+		var t: float = 0.0
+		while t < 1.0:
+			var cur_point := cubic_bezier(a, b, c, d, t)
+			if (smoothed_points.size() == 0 || smoothed_points.back().distance_to(cur_point) > 0.01):
+				smoothed_points.append(cur_point)
+			t += 0.1
+		
+	queued_points = queued_points.slice((queued_points.size()/4)*4 - queued_points.size()%4 - 1, queued_points.size())
 	
-	for i in range(0, points.size(), MAX_LINE_POINTS):
-		refresh_line(max(i-1, 0), min(i+MAX_LINE_POINTS, points.size()))
+	var all_points := smoothed_points + queued_points
+	for i in range(0, all_points.size(), MAX_LINE_POINTS):
+		refresh_line(all_points, max(i-1, 0), min(i+MAX_LINE_POINTS, all_points.size()))
 	
 	_visibility_notifier.rect = Utils.calculate_rect(top_left_pos, bottom_right_pos)
 
@@ -196,5 +222,7 @@ func get_color() -> Color:
 # -------------------------------------------------------------------------------------------------
 func clear() -> void:
 	points.clear()
+	queued_points.clear()
+	smoothed_points.clear()
 	pressures.clear()
 	clear_lines()
