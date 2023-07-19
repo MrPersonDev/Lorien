@@ -16,13 +16,12 @@ var _prev_points: Array # Array<Vector2>
 
 # -------------------------------------------------------------------------------------------------
 func tool_event(event: InputEvent) -> void:
-	_cursor.set_pressure(1.0)
+	var constant_pressure = 0.375
+	_cursor.set_pressure(constant_pressure)
 	
 	if event is InputEventMouseMotion:
 		_current_position = event.position
-		_current_pressure = event.pressure
-		if performing_stroke:
-			_cursor.set_pressure(event.pressure)
+		_current_pressure = constant_pressure
 
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_LEFT:
