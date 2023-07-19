@@ -161,7 +161,7 @@ func refresh_line(_points: Array, start: int, end: int):
 	for i in range(start, end):
 		var point: Vector2 = _points[i]
 		
-		if (i-1 >= 0 && point ==_points[i-1]) || (i+1 < _points.size() && point == _points[i+1]):
+		if i+1 < _points.size() && point == _points[i+1]:
 			continue
 		
 		# Add the point
@@ -202,6 +202,8 @@ func refresh() -> void:
 	queued_points = queued_points.slice((queued_points.size()/4)*4 - queued_points.size()%4 - 1, queued_points.size())
 	
 	var all_points := smoothed_points + queued_points
+	if (all_points.size() <= 3):
+		all_points.append(all_points[0] + Vector2(0.001, 0.001))
 	for i in range(0, all_points.size(), MAX_LINE_POINTS):
 		refresh_line(all_points, max(i-1, 0), min(i+MAX_LINE_POINTS, all_points.size()))
 	

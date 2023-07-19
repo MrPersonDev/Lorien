@@ -218,36 +218,32 @@ func remove_all_stroke_points() -> void:
 func end_stroke() -> void:
 	if _current_stroke != null:
 		var points: Array = _current_stroke.points
-		if points.size() <= 1 || (points.size() == 2 && points.front().is_equal_approx(points.back())):
-			_strokes_parent.remove_child(_current_stroke)
-			_current_stroke.queue_free()
+		if _use_optimizer:
+			print("Stroke points: %d (%d removed by optimizer)" % [
+				_current_stroke.points.size(), 
+				_optimizer.points_removed,
+			])
 		else:
-			if _use_optimizer:
-				print("Stroke points: %d (%d removed by optimizer)" % [
-					_current_stroke.points.size(), 
-					_optimizer.points_removed,
-				])
-			else:
-				print("Stroke points: %d" % _current_stroke.points.size())
-			
-			# TODO: not sure if needed here
-			_current_stroke.refresh()
-			
-			# Colliders for the platformer easter-egg
-			if _colliders_enabled:
-				_current_stroke.enable_collider(true)
-			
-			# Remove the line temporally from the node tree, so the adding is registered in the undo-redo histrory below
-			_strokes_parent.remove_child(_current_stroke)
-			
-			_current_project.undo_redo.create_action("Stroke")
-			_current_project.undo_redo.add_undo_method(self, "undo_last_stroke")
-			_current_project.undo_redo.add_undo_reference(_current_stroke)
-			_current_project.undo_redo.add_do_method(_strokes_parent, "add_child", _current_stroke)
-			_current_project.undo_redo.add_do_property(info, "stroke_count", info.stroke_count + 1)
-			_current_project.undo_redo.add_do_property(info, "point_count", info.point_count + _current_stroke.points.size())
-			_current_project.undo_redo.add_do_method(_current_project, "add_stroke", _current_stroke)
-			_current_project.undo_redo.commit_action()
+			print("Stroke points: %d" % _current_stroke.points.size())
+		
+		# TODO: not sure if needed here
+		_current_stroke.refresh()
+		
+		# Colliders for the platformer easter-egg
+		if _colliders_enabled:
+			_current_stroke.enable_collider(true)
+		
+		# Remove the line temporally from the node tree, so the adding is registered in the undo-redo histrory below
+		_strokes_parent.remove_child(_current_stroke)
+		
+		_current_project.undo_redo.create_action("Stroke")
+		_current_project.undo_redo.add_undo_method(self, "undo_last_stroke")
+		_current_project.undo_redo.add_undo_reference(_current_stroke)
+		_current_project.undo_redo.add_do_method(_strokes_parent, "add_child", _current_stroke)
+		_current_project.undo_redo.add_do_property(info, "stroke_count", info.stroke_count + 1)
+		_current_project.undo_redo.add_do_property(info, "point_count", info.point_count + _current_stroke.points.size())
+		_current_project.undo_redo.add_do_method(_current_project, "add_stroke", _current_stroke)
+		_current_project.undo_redo.commit_action()
 		
 		_current_stroke = null
 
