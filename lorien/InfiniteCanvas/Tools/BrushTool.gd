@@ -56,7 +56,7 @@ func _process(delta: float) -> void:
 		var sensitivity: float = Settings.get_value(Settings.GENERAL_PRESSURE_SENSITIVITY, Config.DEFAULT_PRESSURE_SENSITIVITY)
 		var point_pressure = pressure_curve.interpolate(_current_pressure) * sensitivity
 		if _first_point:
-			point_pressure *= 1.4
+			point_pressure *= 1.0
 			_first_point = false
 		var point_position := xform_vector2(_current_position)
 		
