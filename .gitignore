@@ -4,3 +4,4 @@
 # Mono-specific ignores
 .mono/
 data_*/
+lorien/export_presets.cfg
