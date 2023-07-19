@@ -166,6 +166,14 @@ func _unhandled_input(event):
 				_toggle_distraction_free_mode()
 			elif Utils.event_pressed_bug_workaround("toggle_fullscreen", event):
 				_toggle_fullscreen()
+			
+			for number_key in range(48, 58):
+				if (Input.is_key_pressed(number_key)):
+					var idx := number_key - 49
+					if number_key == 48:
+						idx = 9
+					_brush_color_picker.set_color_by_index(idx)
+					break
 
 # -------------------------------------------------------------------------------------------------
 func _toggle_player() -> void:

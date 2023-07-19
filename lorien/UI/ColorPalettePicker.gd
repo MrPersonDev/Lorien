@@ -109,6 +109,12 @@ func _on_platte_button_pressed(button: PaletteButton, index: int) -> void:
 	emit_signal("color_changed", button.color)
 
 # -------------------------------------------------------------------------------------------------
+func set_color_by_index(color_index: int) -> void:
+	var button = _color_grid.get_child(color_index)
+	_activate_palette_button(button, color_index)
+	emit_signal("color_changed", button.color)
+
+# -------------------------------------------------------------------------------------------------
 func _on_PaletteSelectionButton_item_selected(index: int) -> void:
 	PaletteManager.set_active_palette_by_index(index)
 	PaletteManager.save()
