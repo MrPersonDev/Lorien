@@ -34,6 +34,7 @@ func create_line() -> Line2D:
 	_lines.add_child(_line2d)
 	_line2d.width_curve = Curve.new()
 	_line2d.joint_mode = Line2D.LINE_JOINT_ROUND
+	_line2d.round_precision = 12
 	
 	_line2d.default_color = color
 	_line2d.width = size
