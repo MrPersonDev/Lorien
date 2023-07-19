@@ -2,7 +2,6 @@ class_name BrushTool
 extends CanvasTool
 
 # -------------------------------------------------------------------------------------------------
-const MOVEMENT_THRESHOLD := 1.0
 const MIN_PRESSURE := 0.1
 
 # -------------------------------------------------------------------------------------------------
@@ -48,9 +47,7 @@ func smooth_points(point: Vector2) -> Vector2:
 # -------------------------------------------------------------------------------------------------
 func _process(delta: float) -> void:
 	if performing_stroke:
-		# Basic smoothing
-		var diff := _current_position.distance_squared_to(_last_accepted_position)
-		if diff <= MOVEMENT_THRESHOLD || _current_pressure <= MIN_PRESSURE:
+		if _current_pressure <= MIN_PRESSURE:
 			return
 			
 		var sensitivity: float = Settings.get_value(Settings.GENERAL_PRESSURE_SENSITIVITY, Config.DEFAULT_PRESSURE_SENSITIVITY)
