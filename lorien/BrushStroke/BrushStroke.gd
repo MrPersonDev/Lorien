@@ -32,7 +32,7 @@ func _ready():
 
 # ------------------------------------------------------------------------------------------------
 func create_line() -> Line2D:
-	var _line2d := Line2D.new()
+	var _line2d := AntialiasedLine2D.new()
 	_lines.add_child(_line2d)
 	_line2d.width_curve = Curve.new()
 	_line2d.joint_mode = Line2D.LINE_JOINT_ROUND
@@ -43,13 +43,10 @@ func create_line() -> Line2D:
 	
 	# Anti aliasing
 	var aa_mode: int = Settings.get_value(Settings.RENDERING_AA_MODE, Config.DEFAULT_AA_MODE)
-	match aa_mode:
-		Types.AAMode.OPENGL_HINT:
-			_line2d.antialiased = true
-		Types.AAMode.TEXTURE_FILL:
-			_line2d.texture = BrushStrokeTexture.texture
-			_line2d.texture_mode = Line2D.LINE_TEXTURE_STRETCH
-	
+	if aa_mode == Types.AAMode.TEXTURE_FILL:
+		_line2d.texture = BrushStrokeTexture.texture
+		_line2d.texture_mode = Line2D.LINE_TEXTURE_STRETCH
+
 	var rounding_mode: int = Settings.get_value(Settings.RENDERING_BRUSH_ROUNDING, Config.DEFAULT_BRUSH_ROUNDING)
 	match rounding_mode:
 		Types.BrushRoundingType.FLAT:
