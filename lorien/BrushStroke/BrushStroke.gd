@@ -158,7 +158,7 @@ func refresh_line(_points: Array, start: int, end: int):
 	for i in range(start, end):
 		var point: Vector2 = _points[i]
 		
-		if i+1 < _points.size() && point == _points[i+1]:
+		if i+1 < _points.size() && point.distance_to(_points[i+1]) < 0.001:
 			continue
 		
 		# Add the point
