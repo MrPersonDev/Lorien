@@ -213,6 +213,14 @@ func _commit_strokes_under_selection_rectangle() -> void:
 		stroke.add_to_group(GROUP_SELECTED_STROKES)
 
 # ------------------------------------------------------------------------------------------------
+func select_all_strokes() -> void:
+	for stroke in _canvas.get_all_strokes():
+		stroke.modulate = Config.DEFAULT_SELECTION_COLOR
+		stroke.add_to_group(GROUP_SELECTED_STROKES)
+	if get_selected_strokes().size() > 0:
+		_cursor.mode = SelectionCursor.Mode.MOVE
+
+# ------------------------------------------------------------------------------------------------
 func _deselect_marked_strokes() -> void:
 	for s in get_tree().get_nodes_in_group(GROUP_MARKED_FOR_DESELECTION):
 		s.remove_from_group(GROUP_MARKED_FOR_DESELECTION)

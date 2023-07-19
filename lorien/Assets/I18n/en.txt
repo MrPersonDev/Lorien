@@ -172,6 +172,7 @@ ACTION_canvas_pan_up               Pan up
 ACTION_canvas_pan_down             Pan down
 ACTION_canvas_pan_right            Pan right
 ACTION_canvas_pan_left             Pan left
+ACTION_select_all_strokes          Select all strokes
 
 # -----------------------------------------------------------------------------
 # Kebindings dialog messages

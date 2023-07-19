@@ -33,7 +33,7 @@ var _optimizer: BrushStrokeOptimizer
 var _scale := Config.DEFAULT_UI_SCALE
 
 # -------------------------------------------------------------------------------------------------
-func _ready():
+func _ready():	
 	_optimizer = BrushStrokeOptimizer.new()
 	_brush_size = Settings.get_value(Settings.GENERAL_DEFAULT_BRUSH_SIZE, Config.DEFAULT_BRUSH_SIZE)
 	_active_tool._on_brush_size_changed(_brush_size)
@@ -62,6 +62,11 @@ func _gui_input(event: InputEvent) -> void:
 func _process_event(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		info.current_pressure = event.pressure
+
+	if event.is_action("select_all_strokes"):
+		if _active_tool != _selection_tool:
+			get_parent().get_toolbar().enable_tool(Types.Tool.SELECT)
+		_selection_tool.select_all_strokes()
 
 	if event.is_action("deselect_all_strokes"):
 		if _active_tool == _selection_tool:
@@ -113,7 +118,6 @@ func use_tool(tool_type: int) -> void:
 		prev_tool.reset()
 	_active_tool.enabled = prev_status
 	_active_tool.get_cursor()._on_zoom_changed(_camera.zoom.x)
-
 
 # -------------------------------------------------------------------------------------------------
 func set_background_color(color: Color) -> void:

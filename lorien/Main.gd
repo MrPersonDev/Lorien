@@ -562,3 +562,7 @@ func _get_general_ui_scale() -> float:
 	elif smallest_dimension >= 1700:
 		return Config.DEFAULT_UI_SCALE * 1.5
 	return Config.DEFAULT_UI_SCALE
+
+# --------------------------------------------------------------------------------------------------
+func get_toolbar() -> Toolbar:
+	return _toolbar
