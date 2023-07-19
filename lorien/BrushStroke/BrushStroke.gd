@@ -5,7 +5,7 @@ class_name BrushStroke
 const COLLIDER_NODE_NAME := "StrokeCollider"
 
 # ------------------------------------------------------------------------------------------------
-const MAX_POINTS 			:= 1000
+const MAX_LINE_POINTS		:= 10
 const MAX_PRESSURE_VALUE 	:= 255
 const MIN_PRESSURE_VALUE 	:= 30
 const MAX_PRESSURE_DIFF 	:= 20
@@ -15,7 +15,7 @@ const MAX_VECTOR2 := Vector2(2147483647, 2147483647)
 const MIN_VECTOR2 := -MAX_VECTOR2
 
 # ------------------------------------------------------------------------------------------------
-onready var _line2d: Line2D = $Line2D
+onready var _lines: Node2D = $Lines
 onready var _visibility_notifier: VisibilityNotifier2D = $VisibilityNotifier2D
 var color: Color setget set_color, get_color
 var size: int
@@ -26,8 +26,17 @@ var bottom_right_pos: Vector2
 
 # ------------------------------------------------------------------------------------------------
 func _ready():
+	refresh()
+
+# ------------------------------------------------------------------------------------------------
+func create_line() -> Line2D:
+	var _line2d := Line2D.new()
+	_lines.add_child(_line2d)
 	_line2d.width_curve = Curve.new()
 	_line2d.joint_mode = Line2D.LINE_JOINT_ROUND
+	
+	_line2d.default_color = color
+	_line2d.width = size
 	
 	# Anti aliasing
 	var aa_mode: int = Settings.get_value(Settings.RENDERING_AA_MODE, Config.DEFAULT_AA_MODE)
@@ -47,7 +56,22 @@ func _ready():
 			_line2d.end_cap_mode = Line2D.LINE_CAP_ROUND
 			_line2d.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	
-	refresh()
+	return _line2d
+
+# ------------------------------------------------------------------------------------------------
+func get_line(idx: int) -> Line2D:
+	return _lines.get_child(idx) as Line2D
+
+# ------------------------------------------------------------------------------------------------
+func last_line() -> Line2D:
+	return _lines.get_child(_lines.get_child_count() - 1) as Line2D
+
+# ------------------------------------------------------------------------------------------------
+func clear_lines() -> void:
+	while _lines.get_child_count() > 0:
+		var first_child := _lines.get_child(0)
+		_lines.remove_child(first_child)
+		first_child.queue_free()
 
 # ------------------------------------------------------------------------------------------------
 func _on_VisibilityNotifier2D_viewport_entered(viewport: Viewport) -> void: 
@@ -106,6 +130,7 @@ func remove_last_point() -> void:
 	if !points.empty():
 		points.pop_back()
 		pressures.pop_back()
+		var _line2d := last_line()
 		_line2d.points.remove(_line2d.points.size() - 1)
 		_line2d.width_curve.remove_point(_line2d.width_curve.get_point_count() - 1)
 
@@ -114,49 +139,54 @@ func remove_all_points() -> void:
 	if !points.empty():
 		points.clear()
 		pressures.clear()
-		_line2d.points = PoolVector2Array()
-		_line2d.width_curve.clear_points()
+		remove_all_points()
+
+# ------------------------------------------------------------------------------------------------
+func refresh_line(start: int, end: int):
+	var _line2d := create_line()
+	
+	var max_pressure := float(MAX_PRESSURE_VALUE)
+	var p_idx := 0
+	var curve_step: float = 1.0 / (end-start)
+	for i in range(start, end):
+		var point: Vector2 = points[i]
+		
+		# Add the point
+		_line2d.add_point(point)
+		var pressure: float = pressures[i]
+		_line2d.width_curve.add_point(Vector2(curve_step*p_idx, pressure / max_pressure))
+		p_idx += 1
+		
+		# Update the extreme values
+		top_left_pos.x = min(top_left_pos.x, point.x)
+		top_left_pos.y = min(top_left_pos.y, point.y)
+		bottom_right_pos.x = max(bottom_right_pos.x, point.x)
+		bottom_right_pos.y = max(bottom_right_pos.y, point.y)
+		
+	_line2d.width_curve.bake()
 
 # ------------------------------------------------------------------------------------------------
 func refresh() -> void:
-	var max_pressure := float(MAX_PRESSURE_VALUE)
-	
-	_line2d.clear_points()
-	_line2d.width_curve.clear_points()
+	clear_lines()
 	
 	if points.empty():
 		return
 	
-	_line2d.default_color = color
-	_line2d.width = size
+	top_left_pos = MAX_VECTOR2
+	bottom_right_pos = MIN_VECTOR2
 	
-	var p_idx := 0
-	var top_left := MAX_VECTOR2
-	var bottom_right := MIN_VECTOR2
-	var curve_step: float = 1.0 / pressures.size()
-	for point in points:
-		# Add the point
-		_line2d.add_point(point)
-		var pressure: float = pressures[p_idx]
-		_line2d.width_curve.add_point(Vector2(curve_step*p_idx, pressure / max_pressure))
-		p_idx += 1
-			
-		# Update the extreme values
-		top_left.x = min(top_left.x, point.x)
-		top_left.y = min(top_left.y, point.y)
-		bottom_right.x = max(bottom_right.x, point.x)
-		bottom_right.y = max(bottom_right.y, point.y)
-		
-	_line2d.width_curve.bake()
-	top_left_pos = top_left
-	bottom_right_pos = bottom_right
-	_visibility_notifier.rect = Utils.calculate_rect(top_left, bottom_right)
+	for i in range(0, points.size(), MAX_LINE_POINTS):
+		refresh_line(max(i-1, 0), min(i+MAX_LINE_POINTS, points.size()))
+	
+	_visibility_notifier.rect = Utils.calculate_rect(top_left_pos, bottom_right_pos)
 
 # -------------------------------------------------------------------------------------------------
 func set_color(c: Color) -> void:
 	color = c
-	if _line2d != null:
-		_line2d.default_color = color
+	
+	if _lines != null:
+		for line in _lines.get_children():
+			line.default_color = color
 
 # -------------------------------------------------------------------------------------------------
 func get_color() -> Color:
@@ -166,5 +196,4 @@ func get_color() -> Color:
 func clear() -> void:
 	points.clear()
 	pressures.clear()
-	_line2d.clear_points()
-	_line2d.width_curve.clear_points()
+	clear_lines()

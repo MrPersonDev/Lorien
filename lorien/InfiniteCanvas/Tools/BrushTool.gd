@@ -62,13 +62,6 @@ func _process(delta: float) -> void:
 		
 		var smoothed_point := smooth_points(point_position)
 		add_stroke_point(smoothed_point, point_pressure)
-		
-		# If the brush stroke gets too long, we make a new one. This is necessary because Godot limits the number
-		# of indices in a Line2D/Polygon
-		if get_current_brush_stroke().points.size() >= BrushStroke.MAX_POINTS:
-			end_stroke()
-			start_stroke()
-			add_stroke_point(smoothed_point, point_pressure)
 			
 		_last_accepted_position = _current_position
 
