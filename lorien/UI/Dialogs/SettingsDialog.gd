@@ -19,6 +19,7 @@ onready var _tab_container: TabContainer = $MarginContainer/TabContainer
 onready var _tab_general: Control = $MarginContainer/TabContainer/General
 onready var _tab_appearance: Control = $MarginContainer/TabContainer/Appearance
 onready var _tab_rendering: Control = $MarginContainer/TabContainer/Rendering
+onready var _point_smoothing: SpinBox = $MarginContainer/TabContainer/General/VBoxContainer/PointSmoothing/PressureSensitivity
 onready var _pressure_sensitivity: SpinBox = $MarginContainer/TabContainer/General/VBoxContainer/PressureSensitivity/PressureSensitivity
 onready var _brush_size: SpinBox = $MarginContainer/TabContainer/General/VBoxContainer/DefaultBrushSize/DefaultBrushSize
 onready var _canvas_color: ColorPickerButton = $MarginContainer/TabContainer/General/VBoxContainer/DefaultCanvasColor/DefaultCanvasColor
@@ -58,6 +59,7 @@ func _set_values() -> void:
 	var locale = Settings.get_value(Settings.GENERAL_LANGUAGE, "en")
 	var foreground_fps = Settings.get_value(Settings.RENDERING_FOREGROUND_FPS, Config.DEFAULT_FOREGROUND_FPS)
 	var background_fps = Settings.get_value(Settings.RENDERING_BACKGROUND_FPS, Config.DEFAULT_BACKGROUND_FPS)
+	var point_smoothing = Settings.get_value(Settings.GENERAL_POINT_SMOOTHING, Config.DEFAULT_POINT_SMOOTHING)
 	var pressure_sensitivity = Settings.get_value(Settings.GENERAL_PRESSURE_SENSITIVITY, Config.DEFAULT_PRESSURE_SENSITIVITY)
 	var ui_scale_mode = Settings.get_value(Settings.APPEARANCE_UI_SCALE_MODE, Config.DEFAULT_UI_SCALE_MODE)
 	var ui_scale = Settings.get_value(Settings.APPEARANCE_UI_SCALE, Config.DEFAULT_UI_SCALE)
@@ -80,6 +82,7 @@ func _set_values() -> void:
 	_set_UIScale_range()
 	
 	_pressure_sensitivity.value = pressure_sensitivity
+	_point_smoothing.value = point_smoothing
 	_brush_size.value = brush_size
 	_canvas_color.color = canvas_color
 	_project_dir.text = project_dir
